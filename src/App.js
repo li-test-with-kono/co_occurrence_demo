@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="App" style={{height: "100%", width: "100%"}}>
       <Example width={1000} height={1000}></Example>
-      {/* <MyDiagram></MyDiagram> test  */}
+      {/* <MyDiagram></MyDiagram>  test */}
     </div>
   );
 }
