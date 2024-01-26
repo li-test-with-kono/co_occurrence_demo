@@ -1,0 +1,58 @@
+name: Manual run workflow as deploy_stage_and_create_admin_server_PR.yml
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on workflow_dispatch
+  workflow_dispatch:
+    inputs:
+        logLevel:
+          description: 'Log level'     
+          required: true
+          default: 'warning'
+        tags:
+          description: 'manual run workflow'  
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Deploy
+        #uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.STAGING_SERVER_IP }}
+          username: ${{ secrets.STAGING_SERVER_USERNAME }}
+          port: ${{ secrets.STAGING_SERVER_SSH_PORT }}
+          key: ${{ secrets.STAGING_SERVER_SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/bot
+            git pull
+
+      - uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.STAGING7_SERVER_IP }}
+          username: ${{ secrets.STAGING_SERVER_USERNAME }}
+          port: ${{ secrets.STAGING_SERVER_SSH_PORT }}
+          key: ${{ secrets.STAGING7_SERVER_SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/bot
+            git pull
+
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 0
+      - name: Create a release pull request
+        uses: shinnoki/git-pr-release-action@set-safe-directory
+        env:
+          TZ: Asia/Tokyo
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_ACCESS_TOKEN }}
+          GIT_PR_RELEASE_TOKEN: ${{ secrets.DEPLOY_ACCESS_TOKEN }}
+          GIT_PR_RELEASE_BRANCH_STAGING: staging
+          GIT_PR_RELEASE_BRANCH_PRODUCTION: master
+          GIT_PR_RELEASE_LABELS: release
+          GIT_PR_RELEASE_TEMPLATE: .git-pr-release-template

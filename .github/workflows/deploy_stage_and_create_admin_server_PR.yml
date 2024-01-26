@@ -1,0 +1,37 @@
+name: Deploy stage to admin server
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ staging ]
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Deploy
+        #uses: appleboy/ssh-action@master
+        run: |
+          echo "Mock deployment to staging server"
+          echo "This would normally deploy to the staging server."
+
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 0
+      - name: Create a release pull request
+        uses: shinnoki/git-pr-release-action@set-safe-directory
+        env:
+          TZ: Asia/Tokyo
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_ACCESS_TOKEN }}
+          GIT_PR_RELEASE_TOKEN: ${{ secrets.DEPLOY_ACCESS_TOKEN }}
+          GIT_PR_RELEASE_BRANCH_STAGING: staging
+          GIT_PR_RELEASE_BRANCH_PRODUCTION: master
+          GIT_PR_RELEASE_LABELS: release
+          GIT_PR_RELEASE_TEMPLATE: .git-pr-release-template
